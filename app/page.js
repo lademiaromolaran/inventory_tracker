@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Box, Stack, Typography, Button, Modal, TextField } from '@mui/material';
-import { firestore } from './firebase';  // Ensure this path is correct
+import { firestore } from './firebase'; 
 import {
   collection,
   doc,
@@ -52,14 +52,20 @@ export default function Home() {
 
   const addItem = async (item) => {
     try {
+      if (!item) return; // Ensure item is not empty
+      
       const docRef = doc(collection(firestore, 'inventory'), item);
       const docSnap = await getDoc(docRef);
+      
       if (docSnap.exists()) {
         const { quantity } = docSnap.data();
+        console.log("Existing quantity: ", quantity);  // Debug log
         await setDoc(docRef, { quantity: quantity + 1 }, { merge: true });
       } else {
+        console.log("Item does not exist, adding new item.");  // Debug log
         await setDoc(docRef, { quantity: 1 });
       }
+      
       await updateInventory();
     } catch (error) {
       console.error("Error adding item: ", error);
@@ -70,6 +76,7 @@ export default function Home() {
     try {
       const docRef = doc(collection(firestore, 'inventory'), item);
       const docSnap = await getDoc(docRef);
+      
       if (docSnap.exists()) {
         const { quantity } = docSnap.data();
         if (quantity === 1) {
@@ -78,6 +85,7 @@ export default function Home() {
           await setDoc(docRef, { quantity: quantity - 1 }, { merge: true });
         }
       }
+      
       await updateInventory();
     } catch (error) {
       console.error("Error removing item: ", error);
